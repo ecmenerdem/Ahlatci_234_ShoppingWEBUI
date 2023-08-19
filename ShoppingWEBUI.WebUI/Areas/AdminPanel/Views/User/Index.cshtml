@@ -1,0 +1,224 @@
+﻿@using ShoppingWEBUI.Core.DTO
+@model List<UserDTO>
+@{
+    ViewData["Title"] = "Kullanıcı işlemleri";
+    Layout = "~/Areas/AdminPanel/Views/Shared/_Layout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Kullanıcılar</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-block btn-info" data-toggle="modal" data-target="#modal-NewProduct">Ekle</button>
+
+        </div>
+    </div>
+    <div class="card-body">
+
+        <table id="tblUsers" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th style="width: 10px">#</th>
+                    <th>Ad</th>
+                    <th>Soyad</th>
+                    <th>E-Posta</th>
+                    <th>Telefon</th>
+                    <th style="width:20%"></th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    for (int i = 0; i < Model.Count; i++)
+                    {
+                            <tr>
+                                <td>@Convert.ToInt32(i+1)</td>
+                                <td>@Model[i].FirstName</td>
+                                <td>@Model[i].LastName</td>
+                                <td>@Model[i].Email</td>
+                                <td>@Model[i].PhoneNumber</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-info btnUserDetail" data-guid=@Model[i].Guid data-toggle="modal" data-target="#modal-UserDetail">Detay</button>
+                                        <button type="button" class="btn btn-danger btnRemoveUser" data-guid=@Model[i].Guid>Sil</button>
+                                    </div>
+                                </td>
+                            </tr>
+                    }
+                }
+
+
+
+            </tbody>
+        </table>
+
+
+    </div>
+
+</div>
+<div class="modal fade" id="modal-UserDetail">
+    <div class="modal-dialog modal-UserDetail">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Kullanıcı Detayları</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group row">
+                    <label for="divAd" class="col-sm-2 col-form-label">Ad</label>
+                    <div class="col-sm-10" id="divAd">
+                    </div>
+
+                    <label for="divSoyad" class="col-sm-2 col-form-label">Soyad</label>
+                    <div class="col-sm-10" id="divSoyad">
+                    </div>
+
+                    <label for="divEPosta" class="col-sm-2 col-form-label">E-Posta</label>
+                    <div class="col-sm-10" id="divEPosta">
+                    </div>   
+                    
+                    
+                    <label for="divTel" class="col-sm-2 col-form-label">Telefon</label>
+                    <div class="col-sm-10" id="divTel">
+                    </div>
+                    
+                    <label for="divAdres" class="col-sm-2 col-form-label">Adres</label>
+                    <div class="col-sm-10" id="divAdres">
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Kapat</button>
+               
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script>
+    $(function () {
+        $("#tblUsers").DataTable({
+            "responsive": true,
+            "lengthChange": false,
+            "autoWidth": false,
+            "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+        }).buttons().container().appendTo('#tblUsers_wrapper .col-md-6:eq(0)');
+
+      
+        $('.btnUserDetail').click(function () {
+            var userGUID = $(this).attr('data-guid');
+            $.ajax({
+                url: '/Admin/User/' + userGUID,
+                type: 'get',
+                success: function (response) {
+                    if (response.success) {
+                        $('#divAd').html('').append(response.data.FirstName);
+                        $('#divSoyad').html('').append(response.data.LastName);
+                        $('#divEPosta').html('').append(response.data.Email);
+                        $('#divTel').html('').append(response.data.PhoneNumber);
+                        $('#divAdres').html('').append(response.data.Adress);
+
+                    }
+                    else {
+
+                        var HataBilgisi = response.HataBilgisi;
+                        var Hatalar = '';
+                        if (HataBilgisi.Hata != null) {
+                            for (var i = 0; i < HataBilgisi.Hata.length; i++) {
+                                Hatalar += HataBilgisi.Hata[i] + '</br>';
+                            }
+                        }
+
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: HataBilgisi.HataAciklama,
+                            html: Hatalar
+                        })
+
+
+                    }
+                },
+                error: function (err) {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: "HATA OLUŞTU. TEKRAR DENEYİNİZ.",
+                    })
+                }
+            });
+
+
+        });
+
+        $('.btnRemoveProduct').click(function () {
+            var productGUID = $(this).attr('data-guid');
+
+            Swal.fire({
+                title: 'UYARI!',
+                text: "'Ürünü Silmek İstediğinizden Emin misiniz?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet!',
+                cancelButtonText: 'Hayır',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/RemoveProduct/' + productGUID,
+                        type: 'post',
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                        },
+                        success: function (response) {
+                            if (response.success) {
+
+                                Swal.fire({
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: 'Ürün Başarıyla Silindi',
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                })
+                                setTimeout(function () { window.location.reload() }, 3000);
+
+                            }
+                            else {
+
+                                var HataBilgisi = response.HataBilgisi;
+                                var Hatalar = '';
+                                for (var i = 0; i < HataBilgisi.Hata.length; i++) {
+                                    Hatalar += HataBilgisi.Hata[i] + '</br>';
+                                }
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: HataBilgisi.HataAciklama,
+                                    html: Hatalar
+                                })
+
+
+                            }
+                        },
+                        error: function (err) {
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: "HATA OLUŞTU. TEKRAR DENEYİNİZ.",
+                            })
+                        }
+                    });
+                }
+            })
+        });
+
+    })
+
+</script>

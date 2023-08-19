@@ -1,0 +1,51 @@
+﻿@using ShoppingWEBUI.Core.DTO
+@model List<CategoryDTO>
+@{
+    ViewData["Title"] = "Kategori İşlemleri";
+    Layout = "~/Areas/AdminPanel/Views/Shared/_Layout.cshtml";
+}
+@Html.AntiForgeryToken()
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Kategoriler</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-block btn-info" data-toggle="modal" data-target="#modal-YeniKategori">Ekle</button>
+
+        </div>
+    </div>
+    <div class="card-body">
+
+        @await Component.InvokeAsync("Categories",Model)
+
+
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="modal-YeniKategori">
+    <div class="modal-dialog modal-YeniKategori">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Yeni Kategori</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="txtKategoriAd_Add">Kategori Adı</label>
+                    <input type="text" class="form-control" id="txtKategoriAd_Add">
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="btnAddKategori">Kaydet</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<input type="hidden" id="hdnUpdateCategoryGUID" />

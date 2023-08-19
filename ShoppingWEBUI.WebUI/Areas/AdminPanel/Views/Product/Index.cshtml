@@ -1,0 +1,479 @@
+﻿@using ShoppingWEBUI.Core.DTO
+@using ShoppingWEBUI.Core.ViewModel
+@model ProductViewModel
+@{
+    ViewData["Title"] = "Ürünler";
+    Layout = "~/Areas/AdminPanel/Views/Shared/_Layout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Ürünler</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-block btn-warning" data-toggle="modal" data-target="#modal-Categories">Kategoriler</button>
+            <button type="button" class="btn btn-block btn-info" data-toggle="modal" data-target="#modal-NewProduct">Ekle</button>
+
+
+        </div>
+    </div>
+    <div class="card-body">
+
+        <table id="tblProducts" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th style="width: 10px">#</th>
+                    <th>Ürün Resmi</th>
+                    <th>Ürün Adı</th>
+                    <th>Kategorisi</th>
+                    <th>Birim Fiyatı</th>
+                    <th style="width:20%"></th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    for (int i = 0; i < Model.Products.Count; i++)
+                    {
+                        string productImagePath = "/MediaUpload/" + Model.Products[i].FeaturedImage;
+
+                                    <tr>
+                                        <td>@Convert.ToInt32(i+1)</td>
+                                        <td>
+                                            <a href="@productImagePath" data-toggle="lightbox" data-title="@Model.Products[i].Name">
+                                                <img src="@productImagePath" class="img-fluid mb-2" alt="@Model.Products[i].Name" width="100" />
+                                            </a>
+
+
+
+                                        <td>@Model.Products[i].Name</td>
+                                        <td>@Model.Products[i].CategoryName</td>
+                                        <td>@Model.Products[i].UnitPrice</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-info btnProductDetail" data-guid=@Model.Products[i].Guid data-toggle="modal" data-target="#modal-ProductDetail">Güncelle</button>
+                                                <button type="button" class="btn btn-danger btnRemoveProduct" data-guid=@Model.Products[i].Guid>Sil</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                    }
+                }
+
+
+
+            </tbody>
+        </table>
+
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="modal-Categories">
+    <div class="modal-dialog modal-NewProduct">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Kategoriler</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+             @await Component.InvokeAsync("Categories",Model.Categories)
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="modal-NewProduct">
+    <div class="modal-dialog modal-NewProduct">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Yeni Ürün</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="txtProductName_Add">Ürün Adı</label>
+                    <input type="text" class="form-control" id="txtProductName_Add">
+                </div>
+                <div class="form-group">
+                    <label for="txtProductName_Add">Birim Fiyatı</label>
+                    <input type="text" class="form-control" id="txtProductUnitPrice_Add">
+                </div>
+
+                <div class="form-group">
+                    <label for="txtProductDescription_Add">Ürün Açıklaması</label>
+                    <textarea class="form-control" rows="5" id="txtProductDescription_Add"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="ddlProductCategory_Add">Kategorisi</label>
+                    <select class="custom-select rounded-0" id="ddlProductCategory_Add">
+                        @{
+                            for (int i = 0; i < Model.Categories.Count; i++)
+                            {
+                                            <option value="@Model.Categories[i].Guid">@Model.Categories[i].Name</option>
+                            }
+                        }
+
+
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fuProductFeaturedImage_Add">Öne Çıkan Görsel</label>
+                    <div class="input-group">
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="fuProductFeaturedImage_Add">
+                            <label class="custom-file-label" for="fuProductFeaturedImage_Add">Choose file</label>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="btnAddProduct">Kaydet</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-ProductDetail">
+    <div class="modal-dialog modal-ProductDetail">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Ürün Güncelle</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="txtProductName_Update">Ürün Adı</label>
+                    <input type="text" class="form-control" id="txtProductName_Update">
+                </div>
+                <div class="form-group">
+                    <label for="txtProductUnitPrice_Update">Birim Fiyatı</label>
+                    <input type="text" class="form-control" id="txtProductUnitPrice_Update">
+                </div>
+
+                <div class="form-group">
+                    <label for="txtProductDescription_Update">Ürün Açıklaması</label>
+                    <textarea class="form-control" rows="5" id="txtProductDescription_Update"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="ddlProductCategory_Update">Kategorisi</label>
+                    <select class="custom-select rounded-0" id="ddlProductCategory_Update">
+                        @{
+                            for (int i = 0; i < Model.Categories.Count; i++)
+                            {
+                                            <option value="@Model.Categories[i].Guid">@Model.Categories[i].Name</option>
+                            }
+                        }
+
+
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fuProductFeaturedImage">Öne Çıkan Görsel</label>
+                    <div class="input-group">
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="fuProductFeaturedImage_Update">
+                            <label class="custom-file-label" for="fuProductFeaturedImage_Update">Choose file</label>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="btnUpdateProduct">Kaydet</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<input type="hidden" id="hdnUpdateCategoryGUID" />
+
+<script>
+    $(function () {
+        $("#tblProducts").DataTable({
+            "responsive": true,
+            "lengthChange": false,
+            "autoWidth": false,
+            "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+        }).buttons().container().appendTo('#tblKategoriler_wrapper .col-md-6:eq(0)');
+
+        $('#btnAddProduct').click(function () {
+
+            var product = {
+                Name: $('#txtProductName_Add').val(),
+                CategoryGuid: $('#ddlProductCategory_Add').val(),
+                Description: $('#txtProductDescription_Add').val(),
+                UnitPrice: $('#txtProductUnitPrice_Add').val()
+            }
+
+            var files = $('#fuProductFeaturedImage_Add').prop('files');
+
+            var formData = new FormData();
+            formData.append("Name", product.Name);
+            formData.append("CategoryGuid", product.CategoryGuid);
+            formData.append("Description", product.Description);
+            formData.append("UnitPrice", product.UnitPrice);
+            formData.append("productImage", files[0]);
+
+
+            $.ajax({
+                url: '/Admin/AddProduct',
+                type: 'POST',
+                data: formData,
+                cahce: false,
+                contentType: false,
+                processData: false,
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                success: function (response) {
+                    if (response.success) {
+
+                        Swal.fire({
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Ürün Başarıyla Eklendi',
+                            showConfirmButton: false,
+                            timer: 3000
+                        })
+                        setTimeout(function () { window.location.reload() }, 3000);
+
+                    }
+                    else {
+
+                        var HataBilgisi = response.HataBilgisi;
+                        var Hatalar = '';
+                        for (var i = 0; i < HataBilgisi.Hata.length; i++) {
+                            Hatalar += HataBilgisi.Hata[i] + '</br>';
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: HataBilgisi.HataAciklama,
+                            html: Hatalar
+                        })
+
+
+                    }
+                },
+                error: function (err) {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: "HATA OLUŞTU. TEKRAR DENEYİNİZ.",
+                    })
+                }
+            });
+
+        });
+
+        $('.btnProductDetail').click(function () {
+            var productGUID = $(this).attr('data-guid');
+            $.ajax({
+                url: '/Admin/Urun/' + productGUID,
+                type: 'get',
+                success: function (response) {
+                    if (response.success) {
+
+                        $('#txtProductName_Update').val(response.product.Name);
+                        $('#txtProductUnitPrice_Update').val(response.product.UnitPrice);
+                        $('#txtProductDescription_Update').val(response.product.Description);
+
+                        $('#btnUpdateProduct').attr('data-guid', productGUID)
+
+                        const select = document.querySelector('#ddlProductCategory_Update')
+                        select.value = response.product.CategoryGuid
+                    }
+                    else {
+
+                        var HataBilgisi = response.HataBilgisi;
+                        var Hatalar = '';
+                        if (HataBilgisi.Hata != null) {
+                            for (var i = 0; i < HataBilgisi.Hata.length; i++) {
+                                Hatalar += HataBilgisi.Hata[i] + '</br>';
+                            }
+                        }
+
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: HataBilgisi.HataAciklama,
+                            html: Hatalar
+                        })
+
+
+                    }
+                },
+                error: function (err) {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: "HATA OLUŞTU. TEKRAR DENEYİNİZ.",
+                    })
+                }
+            });
+
+
+        });
+
+
+        $('#btnUpdateProduct').click(function () {
+
+            var product = {
+                Name: $('#txtProductName_Update').val(),
+                CategoryGuid: $('#ddlProductCategory_Update').val(),
+                Description: $('#txtProductDescription_Update').val(),
+                UnitPrice: $('#txtProductUnitPrice_Update').val(),
+                Guid: $(this).attr('data-guid')
+            }
+
+            var files = $('#fuProductFeaturedImage_Update').prop('files');
+
+            var formData = new FormData();
+            formData.append("Name", product.Name);
+            formData.append("CategoryGuid", product.CategoryGuid);
+            formData.append("Description", product.Description);
+            formData.append("UnitPrice", product.UnitPrice);
+            formData.append("Guid", product.Guid);
+            formData.append("productImage", files[0]);
+
+
+
+            $.ajax({
+                url: '/Admin/UpdateProduct',
+                type: 'POST',
+                data: formData,
+                cahce: false,
+                contentType: false,
+                processData: false,
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                success: function (response) {
+                    if (response.success) {
+
+                        Swal.fire({
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Ürün Başarıyla Güncellendi',
+                            showConfirmButton: false,
+                            timer: 3000
+                        })
+                        setTimeout(function () { window.location.reload() }, 3000);
+
+                    }
+                    else {
+
+                        var HataBilgisi = response.HataBilgisi;
+                        var Hatalar = '';
+                        for (var i = 0; i < HataBilgisi.Hata.length; i++) {
+                            Hatalar += HataBilgisi.Hata[i] + '</br>';
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: HataBilgisi.HataAciklama,
+                            html: Hatalar
+                        })
+
+
+                    }
+                },
+                error: function (err) {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: "HATA OLUŞTU. TEKRAR DENEYİNİZ.",
+                    })
+                }
+            });
+
+        });
+
+
+        $('.btnRemoveProduct').click(function () {
+            var productGUID = $(this).attr('data-guid');
+
+            Swal.fire({
+                title: 'UYARI!',
+                text: "'Ürünü Silmek İstediğinizden Emin misiniz?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet!',
+                cancelButtonText: 'Hayır',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/RemoveProduct/' + productGUID,
+                        type: 'post',
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                        },
+                        success: function (response) {
+                            if (response.success) {
+
+                                Swal.fire({
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: 'Ürün Başarıyla Silindi',
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                })
+                                setTimeout(function () { window.location.reload() }, 3000);
+
+                            }
+                            else {
+
+                                var HataBilgisi = response.HataBilgisi;
+                                var Hatalar = '';
+                                for (var i = 0; i < HataBilgisi.Hata.length; i++) {
+                                    Hatalar += HataBilgisi.Hata[i] + '</br>';
+                                }
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: HataBilgisi.HataAciklama,
+                                    html: Hatalar
+                                })
+
+
+                            }
+                        },
+                        error: function (err) {
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: "HATA OLUŞTU. TEKRAR DENEYİNİZ.",
+                            })
+                        }
+                    });
+                }
+            })
+        });
+
+    })
+
+</script>
